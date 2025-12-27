@@ -1,6 +1,6 @@
 use std::env;
-use std::fs;
 use std::error::Error;
+use std::fs;
 
 pub fn run(input: Input) -> Result<(), Box<dyn Error>> {
     let data = fs::read_to_string(input.file_path)?;
@@ -17,24 +17,18 @@ pub fn run(input: Input) -> Result<(), Box<dyn Error>> {
 }
 
 pub fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
-    let mut res = Vec::new();
-    for line in contents.lines() {
-        if line.contains(query) {
-            res.push(line);
-        }
-    }
-    res
+    contents
+        .lines()
+        .filter(|line| line.contains(query))
+        .collect()
 }
 
 pub fn search_insensitive<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
     let query = query.to_lowercase();
-    let mut res = Vec::new();
-    for line in contents.lines() {
-        if line.to_lowercase().contains(&query) {
-            res.push(line);
-        }
-    }
-    res
+    contents
+        .lines()
+        .filter(|s| s.to_lowercase() == query)
+        .collect()
 }
 
 pub struct Input {
@@ -44,16 +38,24 @@ pub struct Input {
 }
 
 impl Input {
-    pub fn build(args: &[String]) -> Result<Self, &'static str> {
-        if args.len() < 3 {
-            return Err("Fuck you give enough things to play");
-        }
-        let query = &args[1];
-        let file_path = &args[2];
+    pub fn build(mut args: impl Iterator<Item = String>) -> Result<Input, &'static str> {
+        args.next();
+
+        let query = match args.next() {
+            Some(arg) => arg,
+            None => return Err("Didn't get a query string"),
+        };
+
+        let file_path = match args.next() {
+            Some(arg) => arg,
+            None => return Err("Didn't get a file path"),
+        };
+
         let case = env::var("CASE").is_ok();
+
         Ok(Input {
-            query: query.clone(),
-            file_path: file_path.clone(),
+            query,
+            file_path,
             case,
         })
     }

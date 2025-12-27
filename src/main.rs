@@ -2,8 +2,7 @@ use grep_tui::Input;
 use std::{env, process};
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
-    let input: Input = Input::build(&args).unwrap_or_else(|err| {
+    let input: Input = Input::build(env::args()).unwrap_or_else(|err| {
         eprintln!("Porbelm parsing arguments: {err}");
         process::exit(1);
     });
